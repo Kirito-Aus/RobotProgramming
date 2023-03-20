@@ -1,8 +1,9 @@
 #pragma once
-#include"Position.h"
+#include "Position.h"
 
 class WorkStation {
 private:
+	int priority;
 	// the priority of task which this workstation request from others
 	int requestTaskPriority;
 	// get the tier of workstation on production tree
@@ -14,22 +15,22 @@ private:
 	}
 
 public:
+	static WorkStation nullWorkStation;
+
 	// status
-	const int id;
-	const int type;
-	const Position position;
+	int id;
+	int type;
+	Position position;
 	int remainingProduceTime;
 	int materialStatus;
 	int producionStatus;
 
-	const int priority;
 
-	WorkStation(int id, int priority, int type, Position& position)
-		:position(position), id(id), priority(priority), type(type) {
+	WorkStation(){}
+
+	void setPriority(int priority) {
+		this->priority = priority;
 		requestTaskPriority = priority * 3 + getTier(type);
-		remainingProduceTime = -1;
-		materialStatus = 0;
-		producionStatus = 0;
 	}
 
 	int getRequestTaskPriority()
@@ -37,3 +38,5 @@ public:
 		return requestTaskPriority;
 	}
 };
+
+WorkStation WorkStation::nullWorkStation;

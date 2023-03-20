@@ -8,6 +8,7 @@ enum TaskStatus{
 	DONE
 };
 
+// use pointer to pass Task objects!
 class Task {
 private:
 	static int CUR_SEQ;
@@ -15,14 +16,15 @@ private:
 public:
 	// empty task assigned to new robot
 	static Task nullTask;
-	WorkStation *const start, *const end;
+
+	WorkStation &start, &end;
 	TaskStatus status;
 	// sequnce number of task, used to compare
 	int seq;
 	// less the num, higher the priority
 	int priority;
 
-	Task(WorkStation* start, WorkStation* end, int priority, TaskStatus status = READY)
+	Task(WorkStation& start, WorkStation& end, int priority, TaskStatus status = READY)
 		:start(start), end(end), priority(priority), status(status) {
 		this->seq = CUR_SEQ++;
 	}
@@ -36,4 +38,4 @@ public:
 };
 
 int Task::CUR_SEQ = 0;
-Task Task::nullTask(nullptr, nullptr, 0, DONE);
+Task Task::nullTask(WorkStation::nullWorkStation, WorkStation::nullWorkStation , 0, DONE);
