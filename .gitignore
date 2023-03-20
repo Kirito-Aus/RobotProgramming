@@ -1,0 +1,12 @@
+# visual studio conf
+/.vs
+
+# visual studio outDir
+/x64
+/RobotProgramming/x64
+
+# visual studio project file
+RobotProgramming.sln
+/RobotProgramming/RobotProgramming.vcxproj
+/RobotProgramming/RobotProgramming.vcxproj.filters
+/RobotProgramming/RobotProgramming.vcxproj.user
