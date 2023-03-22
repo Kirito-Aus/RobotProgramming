@@ -3,9 +3,6 @@
 
 class WorkStation {
 private:
-	int priority;
-	// the priority of task which this workstation request from others
-	int requestTaskPriority;
 	// get the tier of workstation on production tree
 	static int getTier(int type)
 	{
@@ -25,17 +22,14 @@ public:
 	int materialStatus;
 	int producionStatus;
 
+	int priority;
+	// the priority of task which this workstation request from others
+	int requestTaskPriority;
 
 	WorkStation(){}
 
-	void setPriority(int priority) {
-		this->priority = priority;
+	void updateRequestPriority() {
 		requestTaskPriority = priority * 3 + getTier(type);
-	}
-
-	int getRequestTaskPriority()
-	{
-		return requestTaskPriority;
 	}
 };
 

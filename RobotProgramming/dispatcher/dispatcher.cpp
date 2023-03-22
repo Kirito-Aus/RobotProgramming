@@ -1,23 +1,64 @@
 #include <iostream>
 #include <algorithm>
 #include <queue>
+#include <vector>
+#include <string>
 #include "WorkStation.h"
 #include "Robot.h"
 #include "Task.h"
+#include "Request.h"
 using namespace std;
 
-bool workStationLocation[101][101]={false};
+bool workStationPriority[101][101]={false};
 priority_queue<Task> taskList;
-queue<WorkStation> requestList[8]; //require for product 1-7
+priority_queue<Request> requestList[8]; // request for product 1-7
+vector<WorkStation*> resourceList[8];	// resource of product 1-7
 Robot robot[4];
 WorkStation* workStationList;
-bool* workStationUsed;
 
-bool isWorkStationUsed(float x, float y) {
+int getWorkStationPriority(float x, float y) {
 	int i = (199 - int(y * 4)) >> 1;
 	int j = (int(x * 4) - 1) >> 1;
-	//fprintf(stderr, "[debug] (%f, %f) -> [%d][%d]", x, y, i, j);
-	return workStationLocation[i][j];
+	//fprintf(stderr, "[DEBUG] (%f, %f) -> [%d][%d]\n", x, y, i, j);
+	return workStationPriority[i][j] ? 0 : 1;
+}
+
+void addRequest(WorkStation& ws) {
+	if (ws.type < 4) return;
+	fprintf(stderr, "[DEBUG] add WorkStation{id=%d, type=%d} into requestList\n",
+		ws.id, ws.type);
+	switch (ws.type)
+	{
+	case 4:
+		requestList[1].push(Request(&ws));
+		requestList[2].push(Request(&ws));
+		return;
+	case 5:
+		requestList[1].push(Request(&ws));
+		requestList[3].push(Request(&ws));
+		return;
+	case 6:
+		requestList[2].push(Request(&ws));
+		requestList[3].push(Request(&ws));
+		return;
+	case 7:
+		requestList[4].push(Request(&ws));
+		requestList[5].push(Request(&ws));
+		requestList[6].push(Request(&ws));
+		return;
+	case 8:
+	case 9:
+		requestList[7].push(Request(&ws));
+		return;
+	}
+}
+
+void addResource(WorkStation& ws) {
+	if (ws.remainingProduceTime != -1) {
+		fprintf(stderr, "[DEBUG] add WorkStation{id=%d, type=%d} into resourceList\n",
+			ws.id, ws.type);
+		resourceList[ws.type].push_back(&ws);
+	}
 }
 
 int main() {
@@ -39,48 +80,84 @@ int main() {
 	float rTimeValue, rCollisionValue, rAngularSpeed, rLinearSpeedX, 
 		rLinearSpeedY, rFacing, rPosX, rPosY;
 
+	string strOK;
+
+	// vars
+	int preRemainingTime;
+
 	cin >> frameSeq;
 	while (!cin.eof()) {
+		// input
 		cin >> coins;
 		cin >> nWorkStation;
+
+		// update WorkStation
 		if (!init) {
 			workStationList = new WorkStation[nWorkStation];
-			workStationUsed = new bool[nWorkStation];
 			for (int i = 0; i < nWorkStation; i++) {
 				cin >> wsType >> wsPosX >> wsPosY >> 
 					wsRemainingTime >> wsMaterialStatus >> wsProductionStatus;
-				workStationUsed[i] = isWorkStationUsed(wsPosX, wsPosY);
-				if (workStationUsed[i]) {
-					workStationList[i].id = i;
-					workStationList[i].setPriority(0);
-					workStationList[i].position.x = wsPosX;
-					workStationList[i].position.y = wsPosY;
-					workStationList[i].remainingProduceTime = wsRemainingTime;
-					workStationList[i].materialStatus = wsMaterialStatus;
-					workStationList[i].producionStatus = wsProductionStatus;
+				workStationList[i].id = i;
+				workStationList[i].type = wsType;
+				workStationList[i].priority = getWorkStationPriority(wsPosX, wsPosY);
+				workStationList[i].updateRequestPriority();
+				workStationList[i].position.x = wsPosX;
+				workStationList[i].position.y = wsPosY;
+				workStationList[i].remainingProduceTime = wsRemainingTime;
+				workStationList[i].materialStatus = wsMaterialStatus;
+				workStationList[i].producionStatus = wsProductionStatus;
+				addRequest(workStationList[i]);
+				if (workStationList[i].type < 4) {
+					addResource(workStationList[i]);
 				}
-			}
-			for (int i = 0; i < 4; i++) {
-				cin >> rNearbyWs >> rLoadType >> rTimeValue >> rCollisionValue >>
-					rAngularSpeed >> rLinearSpeedX >> rLinearSpeedY >> rFacing >> 
-					rPosX >> rPosY;
-				robot[i].nearbyWorkStationId = rNearbyWs;
-				robot[i].loadType = rLoadType;
-				robot[i].timeValue = rTimeValue;
-				robot[i].collisionValue = rCollisionValue;
-				robot[i].angularSpeed = rAngularSpeed;
-				robot[i].linearSpeed.x = rLinearSpeedX;
-				robot[i].linearSpeed.y = rLinearSpeedY;
-				robot[i].facing = rFacing;
-				robot[i].position.x = rPosX;
-				robot[i].position.y = rPosY;
 			}
 			init = true;
 		}
 		else {
+			for (int i = 0; i < nWorkStation; i++) {
+				// record prev status
+				preRemainingTime = workStationList[i].remainingProduceTime;
 
+				// update
+				cin >> wsType >> wsPosX >> wsPosY >>
+					wsRemainingTime >> wsMaterialStatus >> wsProductionStatus;
+				workStationList[i].position.x = wsPosX;
+				workStationList[i].position.y = wsPosY;
+				workStationList[i].remainingProduceTime = wsRemainingTime;
+				workStationList[i].materialStatus = wsMaterialStatus;
+				workStationList[i].producionStatus = wsProductionStatus;
+
+				// work station production start
+				if (preRemainingTime == -1 && wsRemainingTime >= 0) {
+					addRequest(workStationList[i]);
+					addResource(workStationList[i]);
+				}
+			}
 		}
+		// update Robot
+		for (int i = 0; i < 4; i++) {
+			cin >> rNearbyWs >> rLoadType >> rTimeValue >> rCollisionValue >>
+				rAngularSpeed >> rLinearSpeedX >> rLinearSpeedY >> rFacing >>
+				rPosX >> rPosY;
+			robot[i].nearbyWorkStationId = rNearbyWs;
+			robot[i].loadType = rLoadType;
+			robot[i].timeValue = rTimeValue;
+			robot[i].collisionValue = rCollisionValue;
+			robot[i].angularSpeed = rAngularSpeed;
+			robot[i].linearSpeed.x = rLinearSpeedX;
+			robot[i].linearSpeed.y = rLinearSpeedY;
+			robot[i].facing = rFacing;
+			robot[i].position.x = rPosX;
+			robot[i].position.y = rPosY;
+		}
+
+		// generate Task
+
+		// assign Task to idle robot
+
+		cin >> strOK;
 		cin >> frameSeq;
 	}
+	delete[] workStationList;
 	return 0;
 }

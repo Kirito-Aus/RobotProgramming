@@ -30,10 +30,10 @@ public:
 	}
 
 	// determine which task is larger(more important)
-	bool operator<(const Task& target) const {
-		return (target.priority == this->priority ?
-			target.seq < this->seq :
-			target.priority < this->priority);
+	bool operator<(const Task& isLarger) const {
+		return (isLarger.priority == priority ?
+			isLarger.seq < seq :
+			isLarger.priority < priority);
 	}
 };
 
