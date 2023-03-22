@@ -25,8 +25,7 @@ int getWorkStationPriority(float x, float y) {
 
 void addRequest(WorkStation& ws) {
 	if (ws.type < 4) return;
-	fprintf(stderr, "[DEBUG] add WorkStation{id=%d, type=%d} into requestList\n",
-		ws.id, ws.type);
+	fprintf(stderr, "[DEBUG] add %s into requestList\n", ws.toString().c_str());
 	switch (ws.type)
 	{
 	case 4:
@@ -55,14 +54,13 @@ void addRequest(WorkStation& ws) {
 
 void addResource(WorkStation& ws) {
 	if (ws.remainingProduceTime != -1) {
-		fprintf(stderr, "[DEBUG] add WorkStation{id=%d, type=%d} into resourceList\n",
-			ws.id, ws.type);
+		fprintf(stderr, "[DEBUG] add %s into resourceList\n", ws.toString().c_str());
 		resourceList[ws.type].push_back(&ws);
 	}
 }
 
 int main() {
-	// get used work station from pre-process
+	// TODO: get used work station from pre-process
 
 	bool init = false;
 
@@ -151,9 +149,9 @@ int main() {
 			robot[i].position.y = rPosY;
 		}
 
-		// generate Task
+		// TODO: generate Task
 
-		// assign Task to idle robot
+		// TODO: assign Task to idle robot
 
 		cin >> strOK;
 		cin >> frameSeq;

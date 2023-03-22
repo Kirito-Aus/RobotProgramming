@@ -1,5 +1,9 @@
 #pragma once
+#include <string>
+#include <sstream>
 #include "Position.h"
+using std::string;
+using std::stringstream;
 
 class WorkStation {
 private:
@@ -26,10 +30,16 @@ public:
 	// the priority of task which this workstation request from others
 	int requestTaskPriority;
 
-	WorkStation(){}
+	WorkStation():id(0), type(0), priority(1000) {}
 
 	void updateRequestPriority() {
 		requestTaskPriority = priority * 3 + getTier(type);
+	}
+
+	std::string toString() {
+		std::stringstream buffer;
+		buffer << "WorkStation{id=" << id << ", type=" << type << ", priority=" << priority	<< "}";
+		return buffer.str();
 	}
 };
 
