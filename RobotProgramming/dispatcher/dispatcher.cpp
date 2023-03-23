@@ -205,6 +205,7 @@ int main() {
 			// load type change
 			updateRobotTaskStatus(robot[i], preLoadType);
 		}
+		cin >> strOK;
 
 		// TODO: generate Task
 		for (int i = 1; i <= 7; i++) {
@@ -261,7 +262,7 @@ int main() {
 
 		// TODO: generate robot code for output
 
-		cin >> strOK;
+		cout << "OK\n";
 		cin >> frameSeq;
 	}
 	delete[] workStationList;
