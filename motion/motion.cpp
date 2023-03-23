@@ -5,6 +5,7 @@
 #include "WorkStation.h"
 #include "Robot.h"
 #include "Task.h"
+#define PI 3.1415926
 using namespace std;
 
 bool workStationLocation[101][101]={false};
@@ -30,10 +31,26 @@ void motion(int robotNum, int workStationNum) {
 		}
 	}
 	else {
-		if (robot[robotNum].facing != angle)
-			cout << "rotate " << robotNum << " " << angle - robot[robotNum].facing << endl;
+		if (robot[robotNum].facing != angle) {
+			float deltaAngle = angle - robot[robotNum].facing;
+			if (abs(deltaAngle) <= PI / 2 * 0.02) 
+				cout << "rotate " << robotNum << " " << deltaAngle /0.02 << endl;
+			else
+				cout << "rotate " << robotNum << " " << (deltaAngle > 0 ? PI/2: -PI/2 )<< endl;
+		}	
 		else {
-			cout << "foward " << robotNum << " " << 6 << endl;
+				cout << "forward " << robotNum << " " << 6 << endl;
 		}
 	}
+}
+
+int main()
+{
+	float facing = atan2(1,1);
+	float angle = -PI / 4;
+	float deltaAngle = (facing - angle) >= -PI / 2 && (facing - angle <= PI / 2) ?
+		facing - angle : angle - facing;
+
+	cout << facing << endl;
+	return 0;
 }
