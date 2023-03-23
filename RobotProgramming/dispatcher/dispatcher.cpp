@@ -53,9 +53,10 @@ void addRequest(WorkStation& ws) {
 }
 
 void addResource(WorkStation& ws) {
-	if (ws.remainingProduceTime != -1) {
-		fprintf(stderr, "[DEBUG] add %s into resourceList\n", ws.toString().c_str());
+	if (!ws.resourcePushed && ws.remainingProduceTime <= 50) {
 		resourceList[ws.type].insert(&ws);
+		ws.resourcePushed = true;
+		fprintf(stderr, "[DEBUG] add %s into resourceList\n", ws.toString().c_str());
 	}
 }
 
@@ -64,26 +65,26 @@ inline void updateRobotTaskStatus(Robot& r, int preLoadType) {
 	Task task = r.assignedTask;
 	switch (task.status) {
 	case DONE:
-		fprintf(stderr, "[ERROR] %s load change with assigned task done(preLoad=%d)\n", r.toString(), preLoadType);
+		fprintf(stderr, "[ERROR] %s load change with assigned task done(preLoad=%d)\n", r.toString().c_str(), preLoadType);
 		return;
 	case TO_START_POINT:
 		if (r.loadType != task.start->type) {
-			fprintf(stderr, "[ERROR] %s load change doesn't fit assigned task(preLoad=%d)\n", r.toString(), preLoadType);
+			fprintf(stderr, "[ERROR] %s load change doesn't fit assigned task(preLoad=%d)\n", r.toString().c_str(), preLoadType);
 			return;
 		}
 		task.status = TO_END_POINT;
-		fprintf(stderr, "[DEBUG] %s load change(preLoad=%d)\n", r.toString(), preLoadType);
+		fprintf(stderr, "[DEBUG] %s load change(preLoad=%d)\n", r.toString().c_str(), preLoadType);
 		return;
 	case TO_END_POINT:
 		if (r.loadType != 0) {
-			fprintf(stderr, "[ERROR] %s load change doesn't fit assigned task(preLoad=%d)\n", r.toString(), preLoadType);
+			fprintf(stderr, "[ERROR] %s load change doesn't fit assigned task(preLoad=%d)\n", r.toString().c_str(), preLoadType);
 			return;
 		}
 		task.status = DONE;
-		fprintf(stderr, "[DEBUG] %s load change(preLoad=%d)\n", r.toString(), preLoadType);
+		fprintf(stderr, "[DEBUG] %s load change(preLoad=%d)\n", r.toString().c_str(), preLoadType);
 		return;
 	default:
-		fprintf(stderr, "[ERROR] %s load change with improper assigned task(preLoad=%d)\n", r.toString(), preLoadType);
+		fprintf(stderr, "[ERROR] %s load change with improper assigned task(preLoad=%d)\n", r.toString().c_str(), preLoadType);
 		return;
 	}
 }
@@ -155,9 +156,7 @@ int main() {
 				workStationList[i].materialStatus = wsMaterialStatus;
 				workStationList[i].producionStatus = wsProductionStatus;
 				addRequest(workStationList[i]);
-				if (workStationList[i].type < 4) {
-					addResource(workStationList[i]);
-				}
+				addResource(workStationList[i]);
 			}
 			init = true;
 		}
@@ -178,8 +177,9 @@ int main() {
 				// work station production start
 				if (preRemainingTime == -1 && wsRemainingTime >= 0) {
 					addRequest(workStationList[i]);
-					addResource(workStationList[i]);
+					workStationList[i].resourcePushed = false;
 				}
+				addResource(workStationList[i]);
 			}
 		}
 		// update Robot
