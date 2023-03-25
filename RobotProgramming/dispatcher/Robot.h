@@ -17,7 +17,7 @@ public:
 	float facing;
 	Position position;
 
-	Task assignedTask = Task::nullTask;
+	Task assignedTask = Task::getNull();
 
 	Robot(){}
 

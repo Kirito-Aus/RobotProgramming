@@ -1,20 +1,14 @@
 #include "Pretreatment.h"
-#include<iostream>
-#include<vector>
+#include <iostream>
+#include <vector>
 #include <tuple>
-#include<fstream>
+#include <fstream>
 #include <string>
 #include <cstdlib>
-#include<vector>
+#include <vector>
+#include <cmath>
+#include <cfloat>
 using namespace std;
-
-double calDis(Position p1, Position p2);
-void getClosestLowerLevelStation(WorkStation& ws, vector<int>& llSt, vector<WorkStation>& workStationVec);
-void getTotalPath(int task7ID, vector<WorkStation>& workStationVec, vector<tuple<int, int>>& path, vector<int>& taskStations);
-void getCloestSellStation(WorkStation& ws, vector<int>& sellWordStation8, vector<int>& sellWordStation9, vector<WorkStation>& workStationVec);
-void calSecondLevelWorkStationCost(vector<vector<int>>& stations, vector<WorkStation>& workStationVec);
-int calThirdLevelWorkStationCostAndGetLowTask7(vector<vector<int>>& stations, vector<WorkStation>& workStationVec);
-float getPosByIndex(int index);
 
 bool readInStartData(vector<Robot>& robotVec, vector<WorkStation>& workStationVec, vector<vector<int>>& stations) {
 	fprintf(stderr, "[DEBUG] Start Input Map");

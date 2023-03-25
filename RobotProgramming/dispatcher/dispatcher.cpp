@@ -3,13 +3,10 @@
 #include <queue>
 #include <set>
 #include <string>
-#include<tuple>
-#include "WorkStation.h"
-#include "Robot.h"
-#include "Task.h"
+#include <tuple>
 #include "Request.h"
 #include "motion.h"
-#include"Pretreatment.h"
+#include "Pretreatment.h"
 using namespace std;
 
 bool workStationPriority[101][101]={false};
@@ -29,12 +26,6 @@ vector<int> stationList1, stationList2, stationList3, stationList4, stationList5
 vector<vector<int>> stations = { stationList1, stationList2, stationList3, stationList4, stationList5, stationList6, stationList7, stationList8, stationList9 };
 vector<tuple<int, int>> path;
 
-int Task::CUR_SEQ = 0;
-Task Task::nullTask(&WorkStation::nullWorkStation, &WorkStation::nullWorkStation, 0, DONE);
-WorkStation WorkStation::nullWorkStation;
-
-
-
 int getWorkStationPriority(float x, float y) {
 	int i = (199 - int(y * 4)) >> 1;
 	int j = (int(x * 4) - 1) >> 1;
@@ -44,7 +35,7 @@ int getWorkStationPriority(float x, float y) {
 
 void addRequest(WorkStation& ws) {
 	if (ws.type < 4) return;
-	fprintf(stderr, "[DEBUG] add %s into requestList\n", ws.toString().c_str());
+	//fprintf(stderr, "[DEBUG] add %s into requestList\n", ws.toString().c_str());
 	switch (ws.type)
 	{
 	case 4:
@@ -213,7 +204,7 @@ int main() {
 				workStationList[i].producionStatus = wsProductionStatus;
 
 				// work station production start
-				if (preRemainingTime == -1 && wsRemainingTime >= 0) {
+				if (preRemainingTime <= 0 && wsRemainingTime > 0) {
 					addRequest(workStationList[i]);
 					workStationList[i].resourcePushed = false;
 				}
@@ -274,6 +265,7 @@ int main() {
 		idleRobot.clear();
 		for (int i = 0; i < 4; i++) {
 			if (robot[i].assignedTask.status == DONE) idleRobot.insert(&robot[i]);
+			//fprintf(stderr, "[DEBUG] %s\n", robot[i].toString().c_str());
 		}
 		while (!idleRobot.empty() && !taskList.empty()) {
 			const Task& task = taskList.top();

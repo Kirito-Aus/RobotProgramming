@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 #include <sstream>
-#include<vector>
+#include <vector>
 #include "Position.h"
-#include"CoordinatePos.h"
+#include "CoordinatePos.h"
 using namespace std;
 
 class WorkStation {
@@ -17,7 +17,10 @@ private:
 	}
 
 public:
-	static WorkStation nullWorkStation;
+	static WorkStation& getNull() {
+		static WorkStation nullWorkStation;
+		return nullWorkStation;
+	};
 
 	// status
 	int id;
@@ -59,5 +62,3 @@ public:
 		return buffer.str();
 	}
 };
-
-// WorkStation WorkStation::nullWorkStation;

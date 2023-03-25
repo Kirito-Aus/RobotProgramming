@@ -12,23 +12,19 @@ enum TaskStatus{
 	DONE
 };
 
-
-
 class Task {
 
 private:
 	static int CUR_SEQ;
 
-	const char* strTaskStatus[4] = {
-		"READY",
-		"TO_START_POINT",
-		"TO_END_POINT",
-		"DONE"
-	};
+	const static char* strTaskStatus[4];
 
 public:
 	// empty task assigned to new robot
-	static Task nullTask;
+	static Task& getNull() {
+		static Task nullTask(&WorkStation::getNull(), &WorkStation::getNull(), 0, DONE);
+		return nullTask;
+	}
 
 	// these pointers shouldn't be changed after construction by user
 	WorkStation *start, *end;
@@ -57,6 +53,3 @@ public:
 		return buffer.str();
 	}
 };
-
-// int Task::CUR_SEQ = 0;
-// Task Task::nullTask(&WorkStation::nullWorkStation, &WorkStation::nullWorkStation , 0, DONE);

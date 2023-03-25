@@ -35,5 +35,3 @@ public:
 		return buffer.str();
 	}
 };
-
-int Request::CUR_SEQ = 0;
