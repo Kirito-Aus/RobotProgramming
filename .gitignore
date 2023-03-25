@@ -10,3 +10,6 @@
 /RobotProgramming/*.vcxproj
 /RobotProgramming/*.vcxproj.filters
 /RobotProgramming/*.vcxproj.user
+
+# CMake
+/RobotProgramming/dispatcher/*.exe

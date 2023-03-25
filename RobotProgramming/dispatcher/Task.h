@@ -37,7 +37,7 @@ public:
 	Task(WorkStation* start, WorkStation* end, int priority, TaskStatus status = READY)
 		:start(start), end(end), priority(priority), status(status) {
 		seq = CUR_SEQ++;
-		fprintf(stderr, "[DEBUG] new %s\n", toString().c_str());
+		//fprintf(stderr, "[DEBUG] new %s\n", toString().c_str());
 	}
 
 	// determine which task is larger(more important)

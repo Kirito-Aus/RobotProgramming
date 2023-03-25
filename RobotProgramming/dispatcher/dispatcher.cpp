@@ -12,7 +12,7 @@ using namespace std;
 bool workStationPriority[101][101]={false};
 priority_queue<Task> taskList;
 priority_queue<Request> requestList[8]; // request for product 1-7
-set<WorkStation*> resourceList[8];	// resource of product 1-7
+multiset<WorkStation*> resourceList[8];	// resource of product 1-7
 Robot robot[4];
 WorkStation* workStationList;
 
@@ -35,7 +35,7 @@ int getWorkStationPriority(float x, float y) {
 
 void addRequest(WorkStation& ws) {
 	if (ws.type < 4) return;
-	//fprintf(stderr, "[DEBUG] add %s into requestList\n", ws.toString().c_str());
+	if (ws.priority == 0) fprintf(stderr, "[DEBUG] add %s into requestList\n", ws.toString().c_str());
 	switch (ws.type)
 	{
 	case 4:
@@ -67,13 +67,13 @@ void addResource(WorkStation& ws) {
 	if (!ws.resourcePushed && ws.remainingProduceTime >= 0 && ws.remainingProduceTime <= 100) {
 		resourceList[ws.type].insert(&ws);
 		ws.resourcePushed = true;
-		fprintf(stderr, "[DEBUG] add %s into resourceList\n", ws.toString().c_str());
+		if (ws.priority == 0) fprintf(stderr, "[DEBUG] add %s into resourceList\n", ws.toString().c_str());
 	}
 }
 
 inline void updateRobotTaskStatus(Robot& r, int preLoadType) {
 	if (r.loadType == preLoadType) return;
-	Task task = r.assignedTask;
+	Task& task = r.assignedTask;
 	switch (task.status) {
 	case DONE:
 		fprintf(stderr, "[ERROR] %s load change with assigned task done(preLoad=%d)\n", r.toString().c_str(), preLoadType);
@@ -119,7 +119,8 @@ int main() {
 	for (int i = 0; i < taskStations.size(); i++) {
 		CoordinatePos curCPos = workStationVec[taskStations[i]].cPos;
 		// 将它对应的位置设置为true
-		workStationPriority[curCPos.x][curCPos.y] = true;
+		//cerr << curCPos.x << " " << curCPos.y << endl;
+		workStationPriority[99-curCPos.x][curCPos.y] = true;
 	}
 	fprintf(stderr, "[DEBUG] end Pretreatment\n");
 
@@ -158,6 +159,13 @@ int main() {
 	Robot* nearestRobot;
 	set<Robot*>::iterator robotIter;
 
+	//for (int i = 0; i < 100; i++) {
+	//	for (int j = 0; j < 100; j++) {
+	//		cerr << (workStationPriority[i][j] ? 0 : 1);
+	//	}
+	//	cerr << endl;
+	//}
+
 	// robot id assignment
 	for (int i = 0; i < 4; i++) {
 		robot[i].id = i;
@@ -178,6 +186,9 @@ int main() {
 				workStationList[i].id = i;
 				workStationList[i].type = wsType;
 				workStationList[i].priority = getWorkStationPriority(wsPosX, wsPosY);
+				//if (workStationList[i].priority == 0) {
+				//	cerr << workStationList[i].toString() << endl;
+				//}
 				workStationList[i].updateRequestPriority();
 				workStationList[i].position.x = wsPosX;
 				workStationList[i].position.y = wsPosY;
@@ -211,6 +222,7 @@ int main() {
 				addResource(workStationList[i]);
 			}
 		}
+
 		// update Robot
 		for (int i = 0; i < 4; i++) {
 			// record prev status
@@ -236,6 +248,15 @@ int main() {
 		}
 		cin >> strOK;
 
+		if (frameSeq % 50 == 0) {
+			for (int i = 0; i < 4; i++) {
+				if (robot[i].assignedTask.status == TO_START_POINT)
+					fprintf(stderr, "[DEBUG] %s facing %.2f target %.2f\n", robot[i].toString().c_str(), robot[i].facing, calcAngle(robot[i].position, robot[i].assignedTask.start->position));
+				else if (robot[i].assignedTask.status == TO_END_POINT)
+					fprintf(stderr, "[DEBUG] %s facing %.2f target %.2f\n", robot[i].toString().c_str(), robot[i].facing, calcAngle(robot[i].position, robot[i].assignedTask.end->position));
+			}
+		}
+
 		// TODO: generate Task
 		for (int i = 1; i <= 7; i++) {
 			while (!resourceList[i].empty() && !requestList[i].empty()) {
@@ -255,7 +276,9 @@ int main() {
 					}
 				}
 
-				taskList.push(Task(nearestWs, request.requester, request.priority));
+				Task newTask(nearestWs, request.requester, request.priority);
+				taskList.push(newTask);
+				if (newTask.end->priority == 0) cerr << "[DEBUG] new " << newTask.toString() << endl;
 				resourceList[i].erase(nearestWs);
 				requestList[i].pop();
 			}

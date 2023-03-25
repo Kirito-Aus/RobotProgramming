@@ -19,7 +19,7 @@ public:
 		:requester(requester) {
 		priority = requester->requestTaskPriority;
 		seq = CUR_SEQ++;
-		fprintf(stderr, "[DEBUG] new %s\n", toString().c_str());
+		//fprintf(stderr, "[DEBUG] new %s\n", toString().c_str());
 	}
 
 	// determine which request is larger(more important)
