@@ -93,6 +93,12 @@ inline void updateRobotTaskStatus(Robot& r, int preLoadType) {
 		}
 		task.status = DONE;
 		fprintf(stderr, "[DEBUG] %s load change(preLoad=%d)\n", r.toString().c_str(), preLoadType);
+
+		// type 8 and 9 request
+		if (r.assignedTask.end->type > 7) {
+			addRequest(*r.assignedTask.end);
+		}
+
 		return;
 	default:
 		fprintf(stderr, "[ERROR] %s load change with improper assigned task(preLoad=%d)\n", r.toString().c_str(), preLoadType);
@@ -186,6 +192,7 @@ int main() {
 				workStationList[i].id = i;
 				workStationList[i].type = wsType;
 				workStationList[i].priority = getWorkStationPriority(wsPosX, wsPosY);
+				if (workStationList[i].type > 7) workStationList[i].priority = 0;
 				//if (workStationList[i].priority == 0) {
 				//	cerr << workStationList[i].toString() << endl;
 				//}
@@ -222,7 +229,7 @@ int main() {
 				addResource(workStationList[i]);
 			}
 		}
-
+		
 		// update Robot
 		for (int i = 0; i < 4; i++) {
 			// record prev status
@@ -248,14 +255,14 @@ int main() {
 		}
 		cin >> strOK;
 
-		if (frameSeq % 50 == 0) {
-			for (int i = 0; i < 4; i++) {
-				if (robot[i].assignedTask.status == TO_START_POINT)
-					fprintf(stderr, "[DEBUG] %s facing %.2f target %.2f\n", robot[i].toString().c_str(), robot[i].facing, calcAngle(robot[i].position, robot[i].assignedTask.start->position));
-				else if (robot[i].assignedTask.status == TO_END_POINT)
-					fprintf(stderr, "[DEBUG] %s facing %.2f target %.2f\n", robot[i].toString().c_str(), robot[i].facing, calcAngle(robot[i].position, robot[i].assignedTask.end->position));
-			}
-		}
+		//if (frameSeq % 50 == 0) {
+		//	for (int i = 0; i < 4; i++) {
+		//		if (robot[i].assignedTask.status == TO_START_POINT)
+		//			fprintf(stderr, "[DEBUG] %s facing %.2f target %.2f\n", robot[i].toString().c_str(), robot[i].facing, calcAngle(robot[i].position, robot[i].assignedTask.start->position));
+		//		else if (robot[i].assignedTask.status == TO_END_POINT)
+		//			fprintf(stderr, "[DEBUG] %s facing %.2f target %.2f\n", robot[i].toString().c_str(), robot[i].facing, calcAngle(robot[i].position, robot[i].assignedTask.end->position));
+		//	}
+		//}
 
 		// TODO: generate Task
 		for (int i = 1; i <= 7; i++) {

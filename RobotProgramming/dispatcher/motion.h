@@ -22,8 +22,10 @@ void printForwardMotion(Robot& robot, WorkStation& ws) {
 		return;
 	}
 	float angle = calcAngle(robot.position, ws.position);
-	if (abs(robot.facing - angle) >0.001) {
-		float deltaAngle = angle - robot.facing;
+	float deltaAngle = angle - robot.facing;
+	if (deltaAngle > PI) deltaAngle = deltaAngle - 2 * PI;
+	if (deltaAngle < -PI) deltaAngle = deltaAngle + 2 * PI;
+	if (abs(deltaAngle) > 0.01) {
 		if (abs(deltaAngle) <= PI / 2 * 0.02)
 			cout << "rotate " << robot.id << " " << deltaAngle / 0.02 << endl;
 		else
