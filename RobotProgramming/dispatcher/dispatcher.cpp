@@ -7,6 +7,7 @@
 #include "Robot.h"
 #include "Task.h"
 #include "Request.h"
+#include "motion.h"
 using namespace std;
 
 bool workStationPriority[101][101]={false};
@@ -53,7 +54,8 @@ void addRequest(WorkStation& ws) {
 }
 
 void addResource(WorkStation& ws) {
-	if (!ws.resourcePushed && ws.remainingProduceTime <= 50) {
+	if (ws.type > 7) return;
+	if (!ws.resourcePushed && ws.remainingProduceTime >= 0 && ws.remainingProduceTime <= 100) {
 		resourceList[ws.type].insert(&ws);
 		ws.resourcePushed = true;
 		fprintf(stderr, "[DEBUG] add %s into resourceList\n", ws.toString().c_str());
@@ -260,7 +262,11 @@ int main() {
 			idleRobot.erase(nearestRobot);
 		}
 
+		cout << frameSeq << endl;
 		// TODO: generate robot code for output
+		for (int i = 0; i < 4; i++) {
+			printMotion(robot[i], workStationList);
+		}
 
 		cout << "OK\n";
 		cin >> frameSeq;

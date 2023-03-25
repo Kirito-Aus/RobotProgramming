@@ -30,7 +30,7 @@ public:
 	// the priority of task which this workstation request from others
 	int requestTaskPriority;
 	// wheather the workStation's production is registered
-	bool resourcePushed = true;
+	bool resourcePushed = false;
 
 	WorkStation():id(0), type(0), priority(1000) {}
 
