@@ -56,7 +56,7 @@ void printMotion(Robot& robot) {
 	case TO_END_POINT:
 		WorkStation& targetWs = workStationList[robot.assignedTask.end->id];
 		if (robot.nearbyWorkStationId == targetWs.id) {
-			if (robot.loadType != 0) {
+			if (robot.loadType == 0) {
 				fprintf(stderr, "[ERROR] %s cannot sell since it's empty\n", robot.toString().c_str());
 				return;
 			}
