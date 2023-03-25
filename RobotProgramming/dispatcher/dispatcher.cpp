@@ -117,6 +117,8 @@ float calcSquareDistance(Position p1, Position p2) {
 
 int main() {
 
+	fprintf(stderr, "[DEBUG] Start Pretreatment\n");
+
 	// TODO: get used work station from pre-process
 	/***进行开始时的地图交互***/
 	readInStartData(robotVec, workStationVec, stations);
@@ -128,6 +130,8 @@ int main() {
 		// 将它对应的位置设置为true
 		workStationPriority[curCPos.x][curCPos.y] = true;
 	}
+	fprintf(stderr, "[DEBUG] end Pretreatment\n");
+
 	// 输出结果
 	puts("OK");
 	fflush(stdout);

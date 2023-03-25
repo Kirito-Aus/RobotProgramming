@@ -14,8 +14,10 @@ void getTotalPath(int task7ID, vector<WorkStation>& workStationVec, vector<tuple
 void getCloestSellStation(WorkStation& ws, vector<int>& sellWordStation8, vector<int>& sellWordStation9, vector<WorkStation>& workStationVec);
 void calSecondLevelWorkStationCost(vector<vector<int>>& stations, vector<WorkStation>& workStationVec);
 int calThirdLevelWorkStationCostAndGetLowTask7(vector<vector<int>>& stations, vector<WorkStation>& workStationVec);
+float getPosByIndex(int index);
 
 bool readInStartData(vector<Robot>& robotVec, vector<WorkStation>& workStationVec, vector<vector<int>>& stations) {
+	fprintf(stderr, "[DEBUG] Start Input Map");
 	int wordStationCount = 0;
 	int row = 0;
 	int robotCount = 0;
@@ -36,32 +38,39 @@ bool readInStartData(vector<Robot>& robotVec, vector<WorkStation>& workStationVe
 					WorkStation ws;
 					ws.id = wordStationCount++;
 					ws.type = type;
-					CoordinatePos cPos(row, col);
+					CoordinatePos cPos(99 - row, col);
 					ws.cPos = cPos;
 					// 根据行数和列数计算出当前的位置
-					float rowPos = getPosByIndex(0, row);
-					float colPos = getPosByIndex(1, col);
+					float rowPos = getPosByIndex(99-row);
+					float colPos = getPosByIndex(col);
 					ws.position = Position(colPos, rowPos);
 					workStationVec.push_back(ws);
 					stations[type - 1].push_back(ws.id);
+					fprintf(stderr, "[DEBUG] pretreat add %s into workStationVec\n", ws.pretreatToString().c_str());
 				}
 				else if (line[col] == 'A') {
 					// 如果是机器人
 					Robot rb;
 					rb.id = robotCount++;
-					float rowPos = getPosByIndex(0, row);
+					float rowPos = getPosByIndex(0, 99 - row);
 					float colPos = getPosByIndex(1, col);
 					rb.position = Position(colPos, rowPos);
 					robotVec.push_back(rb);
+					fprintf(stderr, "[DEBUG] pretreat add %s into robotVec\n", rb.toString().c_str());
 				}
 			}
 		}
+
 
 		row++;
 	}
 	return false;
 }
 
+float getPosByIndex(int index) {
+	float pos = (float)0.25 + (float)50 / 100 * index;
+	return pos;
+}
 
 // 根据下标计算位置的函数
 float getPosByIndex(int type, int index) {
@@ -84,6 +93,7 @@ float getPosByIndex(int type, int index) {
 /****计算路径*****/
 // 计算路径
 void getPath(vector<vector<int>>& stations, vector<WorkStation>& workStationVec, vector<tuple<int, int>>& path, vector<int>& taskStations) {
+	fprintf(stderr, "[DEBUG] Start Calculation Path\n");
 	calSecondLevelWorkStationCost(stations, workStationVec);
 	int task7ID = calThirdLevelWorkStationCostAndGetLowTask7(stations, workStationVec);
 	getTotalPath(task7ID, workStationVec, path, taskStations);
@@ -133,7 +143,7 @@ void calSecondLevelWorkStationCost(vector<vector<int>>& stations, vector<WorkSta
 int calThirdLevelWorkStationCostAndGetLowTask7(vector<vector<int>>& stations, vector<WorkStation>& workStationVec) {
 	// 参数定义
 	double lowestTotalCost = DBL_MAX;
-	int lowestTotalCostTask7ID;
+	int lowestTotalCostTask7ID = -1;
 	// 对所有的7Level的，找周围的子任务的节点
 	for (int stP = 0; stP < stations[6].size(); stP++) {
 		// 需要 4 5 6
@@ -157,7 +167,6 @@ int calThirdLevelWorkStationCostAndGetLowTask7(vector<vector<int>>& stations, ve
 void getTotalPath(int task7ID, vector<WorkStation>& workStationVec, vector<tuple<int, int>>& path, vector<int>& taskStations) {
 	// 首先找它的下一层级任务，接着对下一层再找下一层
 	WorkStation& ws7 = workStationVec[task7ID];
-	taskStations.push_back(ws7.id);
 	for (int l2TaskIDP = 0; l2TaskIDP < ws7.preWorkStationID.size(); l2TaskIDP++) {
 		// 找到下游任务
 		WorkStation& l2Task = workStationVec[ws7.preWorkStationID[l2TaskIDP]];
@@ -166,14 +175,19 @@ void getTotalPath(int task7ID, vector<WorkStation>& workStationVec, vector<tuple
 		WorkStation& l1Task2 = workStationVec[l2Task.preWorkStationID[1]];
 		taskStations.push_back(l2Task.id);
 		taskStations.push_back(l1Task1.id);
-		taskStations.push_back(l1Task1.id);
+		taskStations.push_back(l1Task2.id);
 		// 将其添加到 level2Stations、 Path中
 		path.push_back(make_tuple(l2Task.id, task7ID));
 		path.push_back(make_tuple(l1Task1.id, l2Task.id));
 		path.push_back(make_tuple(l1Task2.id, l2Task.id));
+		fprintf(stderr, "[DEBUG] Add Pretreatment Level2 Task %s\n", l2Task.toString().c_str());
+		fprintf(stderr, "[DEBUG] Add Pretreatment Level1_1 Task %s\n", l1Task1.toString().c_str());
+		fprintf(stderr, "[DEBUG] Add Pretreatment Level1_2 Task %s\n", l1Task2.toString().c_str());
 	}
 	// 将到sellWorkStation的内容也加入
+	taskStations.push_back(ws7.id);
 	path.push_back(make_tuple(task7ID, ws7.sellWorkStationID));
+	fprintf(stderr, "[DEBUG] Add Pretreatment Level3 Task %s\n", ws7.toString().c_str());
 }
 
 

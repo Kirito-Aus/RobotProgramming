@@ -52,6 +52,12 @@ public:
 		buffer << "WorkStation{id=" << id << ", type=" << type << ", priority=" << priority	<< "}";
 		return buffer.str();
 	}
+
+	std::string pretreatToString() {
+		std::stringstream buffer;
+		buffer << "WorkStation{id=" << id << ", type=" << type << ", CPos=" << cPos.toString()<<",Position="<<position.toString() << "}";
+		return buffer.str();
+	}
 };
 
 // WorkStation WorkStation::nullWorkStation;
