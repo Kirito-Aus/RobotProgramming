@@ -3,11 +3,13 @@
 #include <queue>
 #include <set>
 #include <string>
+#include<tuple>
 #include "WorkStation.h"
 #include "Robot.h"
 #include "Task.h"
 #include "Request.h"
 #include "motion.h"
+#include"Pretreatment.h"
 using namespace std;
 
 bool workStationPriority[101][101]={false};
@@ -16,6 +18,22 @@ priority_queue<Request> requestList[8]; // request for product 1-7
 set<WorkStation*> resourceList[8];	// resource of product 1-7
 Robot robot[4];
 WorkStation* workStationList;
+
+/**Pretreatment处的全局变量**/
+// 根据ID排序的Robot列表
+vector<Robot> robotVec;
+// 根据ID排序的WorkStation列表
+vector<WorkStation> workStationVec;
+// 按照类型分列表的WorkStation列表
+vector<int> stationList1, stationList2, stationList3, stationList4, stationList5, stationList6, stationList7, stationList8, stationList9;
+vector<vector<int>> stations = { stationList1, stationList2, stationList3, stationList4, stationList5, stationList6, stationList7, stationList8, stationList9 };
+vector<tuple<int, int>> path;
+
+int Task::CUR_SEQ = 0;
+Task Task::nullTask(&WorkStation::nullWorkStation, &WorkStation::nullWorkStation, 0, DONE);
+WorkStation WorkStation::nullWorkStation;
+
+
 
 int getWorkStationPriority(float x, float y) {
 	int i = (199 - int(y * 4)) >> 1;
@@ -98,7 +116,21 @@ float calcSquareDistance(Position p1, Position p2) {
 }
 
 int main() {
+
 	// TODO: get used work station from pre-process
+	/***进行开始时的地图交互***/
+	readInStartData(robotVec, workStationVec, stations);
+	vector<int> taskStations;
+	getPath(stations, workStationVec, path, taskStations);
+	// 设置bool workStationPriority[101][101]
+	for (int i = 0; i < taskStations.size(); i++) {
+		CoordinatePos curCPos = workStationVec[taskStations[i]].cPos;
+		// 将它对应的位置设置为true
+		workStationPriority[curCPos.x][curCPos.y] = true;
+	}
+	// 输出结果
+	puts("OK");
+	fflush(stdout);
 
 	bool init = false;
 

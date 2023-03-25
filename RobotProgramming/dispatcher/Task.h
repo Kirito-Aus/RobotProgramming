@@ -12,16 +12,19 @@ enum TaskStatus{
 	DONE
 };
 
-const char* strTaskStatus[4] = {
-	"READY",
-	"TO_START_POINT",
-	"TO_END_POINT",
-	"DONE"
-};
+
 
 class Task {
+
 private:
 	static int CUR_SEQ;
+
+	const char* strTaskStatus[4] = {
+		"READY",
+		"TO_START_POINT",
+		"TO_END_POINT",
+		"DONE"
+	};
 
 public:
 	// empty task assigned to new robot
@@ -55,5 +58,5 @@ public:
 	}
 };
 
-int Task::CUR_SEQ = 0;
-Task Task::nullTask(&WorkStation::nullWorkStation, &WorkStation::nullWorkStation , 0, DONE);
+// int Task::CUR_SEQ = 0;
+// Task Task::nullTask(&WorkStation::nullWorkStation, &WorkStation::nullWorkStation , 0, DONE);

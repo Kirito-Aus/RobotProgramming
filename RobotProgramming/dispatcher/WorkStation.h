@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
 #include <sstream>
+#include<vector>
 #include "Position.h"
-using std::string;
-using std::stringstream;
+#include"CoordinatePos.h"
+using namespace std;
 
 class WorkStation {
 private:
@@ -22,6 +23,7 @@ public:
 	int id;
 	int type;
 	Position position;
+	CoordinatePos cPos;
 	int remainingProduceTime;
 	int materialStatus;
 	int producionStatus;
@@ -31,6 +33,13 @@ public:
 	int requestTaskPriority;
 	// wheather the workStation's production is registered
 	bool resourcePushed = false;
+
+	/*Pretreatment处理*/
+	// 前一层的任务（从哪个id的工作台来）
+	vector<int> preWorkStationID;
+	// 完成生产该任务的开销（上一层工作台的总开销+上一层工作台到该工作台的总开销）
+	double cost;
+	int sellWorkStationID;
 
 	WorkStation():id(0), type(0), priority(1000) {}
 
@@ -45,4 +54,4 @@ public:
 	}
 };
 
-WorkStation WorkStation::nullWorkStation;
+// WorkStation WorkStation::nullWorkStation;
