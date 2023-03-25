@@ -6,7 +6,7 @@
 /RobotProgramming/x64
 
 # visual studio project file
-RobotProgramming.sln
-/RobotProgramming/RobotProgramming.vcxproj
-/RobotProgramming/RobotProgramming.vcxproj.filters
-/RobotProgramming/RobotProgramming.vcxproj.user
+*.sln
+/RobotProgramming/*.vcxproj
+/RobotProgramming/*.vcxproj.filters
+/RobotProgramming/*.vcxproj.user

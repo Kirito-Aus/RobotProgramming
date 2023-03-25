@@ -1,11 +1,12 @@
 #pragma once
+#include <string>
+#include <sstream>
 #include "Position.h"
+using std::string;
+using std::stringstream;
 
 class WorkStation {
 private:
-	int priority;
-	// the priority of task which this workstation request from others
-	int requestTaskPriority;
 	// get the tier of workstation on production tree
 	static int getTier(int type)
 	{
@@ -25,17 +26,22 @@ public:
 	int materialStatus;
 	int producionStatus;
 
+	int priority;
+	// the priority of task which this workstation request from others
+	int requestTaskPriority;
+	// wheather the workStation's production is registered
+	bool resourcePushed = true;
 
-	WorkStation(){}
+	WorkStation():id(0), type(0), priority(1000) {}
 
-	void setPriority(int priority) {
-		this->priority = priority;
+	void updateRequestPriority() {
 		requestTaskPriority = priority * 3 + getTier(type);
 	}
 
-	int getRequestTaskPriority()
-	{
-		return requestTaskPriority;
+	std::string toString() {
+		std::stringstream buffer;
+		buffer << "WorkStation{id=" << id << ", type=" << type << ", priority=" << priority	<< "}";
+		return buffer.str();
 	}
 };
 
