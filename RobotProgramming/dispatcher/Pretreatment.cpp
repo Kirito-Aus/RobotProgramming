@@ -4,11 +4,29 @@
 #include <tuple>
 #include <fstream>
 #include <string>
+#include<algorithm>
 #include <cstdlib>
 #include <vector>
 #include <cmath>
 #include <cfloat>
 using namespace std;
+
+
+double calDis(Position p1, Position p2);
+void getClosestLowerLevelStation(WorkStation& ws, vector<int>& llSt, vector<WorkStation>& workStationVec);
+void getTotalPath(int task7ID, vector<WorkStation>& workStationVec, vector<tuple<int, int>>& path, vector<int>& taskStations);
+void getCloestSellStation(WorkStation& ws, vector<int>& sellWordStation8, vector<int>& sellWordStation9, vector<WorkStation>& workStationVec);
+void calSecondLevelWorkStationCost(vector<vector<int>>& stations, vector<WorkStation>& workStationVec);
+int calThirdLevelWorkStationCostAndGetLowTask7(vector<vector<int>>& stations, vector<WorkStation>& workStationVec);
+float getPosByIndex(int index);
+bool existFixedLevelStation(vector<vector<int>>& stations, int level);
+// 如果在没有7的情况下，则调用以下方式来获取第二层的任务，对于第二层的任务，我们选择最好实现的前3个作为需要调度的内容
+bool calTasksWithOutStation7(vector<vector<int>>& stations, vector<int>& busyStation, vector<WorkStation>& workStationVec, vector<int>& secondLevelTask);
+// 获取没有工作台7的第二层工作台的工作任务
+void getTotalPathWithout7(vector<int>& secondLevelTask, vector<WorkStation>& workStationVec, vector<int>& taskStations);
+// 获取所有第二层节点到出售它们的节点的距离——初始化时，只做一次
+void getSecondLevelStationSellStation(vector<WorkStation>& workStationVec, vector<vector<int>>& stations, vector<int>& sellWordStation9);
+
 
 bool readInStartData(vector<Robot>& robotVec, vector<WorkStation>& workStationVec, vector<vector<int>>& stations) {
 	fprintf(stderr, "[DEBUG] Start Input Map");
@@ -86,12 +104,35 @@ float getPosByIndex(int type, int index) {
 
 /****计算路径*****/
 // 计算路径
+/*
 void getPath(vector<vector<int>>& stations, vector<WorkStation>& workStationVec, vector<tuple<int, int>>& path, vector<int>& taskStations) {
 	fprintf(stderr, "[DEBUG] Start Calculation Path\n");
 	calSecondLevelWorkStationCost(stations, workStationVec);
 	int task7ID = calThirdLevelWorkStationCostAndGetLowTask7(stations, workStationVec);
 	getTotalPath(task7ID, workStationVec, path, taskStations);
 }
+*/
+// 计算路径
+void getPath(vector<vector<int>>& stations, vector<WorkStation>& workStationVec, vector<tuple<int, int>>& path, vector<int>& taskStations) {
+	fprintf(stderr, "[DEBUG] Start Calculation Path\n");
+	// 需要根据是否存在7工作台来判断最终目标是构建第二层的任务还是第三层的任务
+	calSecondLevelWorkStationCost(stations, workStationVec);
+	if (existFixedLevelStation(stations, 3)) {
+		// 如果存在第三层的工作台，则目标是7
+		int task7ID = calThirdLevelWorkStationCostAndGetLowTask7(stations, workStationVec);
+		getTotalPath(task7ID, workStationVec, path, taskStations);
+	}
+	else {
+		// 默认存在第二层工作台，计算第二层工作台
+		vector<int> busyStations;
+		vector<int> secondLevelTask;
+		// 对4、5、6计算它的出售位置_初始化时需要
+		getSecondLevelStationSellStation(workStationVec, stations, stations[9 - 1]);
+		calTasksWithOutStation7(stations, busyStations, workStationVec, secondLevelTask);// 获取调度任务
+		getTotalPathWithout7(secondLevelTask, workStationVec, taskStations);// 获取路径
+	}
+}
+
 
 // 计算第二层工作台的开销:4 5 6
 void calSecondLevelWorkStationCost(vector<vector<int>>& stations, vector<WorkStation>& workStationVec) {
@@ -185,6 +226,31 @@ void getTotalPath(int task7ID, vector<WorkStation>& workStationVec, vector<tuple
 }
 
 
+// 获取没有工作台7的第二层工作台的工作任务
+void getTotalPathWithout7(vector<int>& secondLevelTask, vector<WorkStation>& workStationVec, vector<int>& taskStations) {
+	// 对于所有第二层任务进行处理
+
+	for (int l2TaskIDP = 0; l2TaskIDP < secondLevelTask.size(); l2TaskIDP++) {
+		// 找到下游任务
+		WorkStation& l2Task = workStationVec[secondLevelTask[l2TaskIDP]];
+		WorkStation& l2SellStation = workStationVec[l2Task.sellWorkStationID];
+		// 找到它的更加下游的任务
+		WorkStation& l1Task1 = workStationVec[l2Task.preWorkStationID[0]];
+		// 将到SellStation的内容也加入
+		WorkStation& l1Task2 = workStationVec[l2Task.preWorkStationID[1]];
+		// 将其添加到 taskStations 中
+		taskStations.push_back(l2Task.id);
+		taskStations.push_back(l2Task.sellWorkStationID);
+		taskStations.push_back(l1Task1.id);
+		taskStations.push_back(l2Task.sellWorkStationID);
+		fprintf(stderr, "[DEBUG] Add Pretreatment Level2 Task %s\n", l2Task.toString().c_str());
+		fprintf(stderr, "[DEBUG] Add Pretreatment SellStation Task %s\n", l2SellStation.toString().c_str());
+		fprintf(stderr, "[DEBUG] Add Pretreatment Level1_1 Task %s\n", l1Task1.toString().c_str());
+		fprintf(stderr, "[DEBUG] Add Pretreatment Level1_2 Task %s\n", l1Task2.toString().c_str());
+	}
+}
+
+
 // 计算当前节点和下级节点列表中最近的点
 void getClosestLowerLevelStation(WorkStation& ws, vector<int>& llSt, vector<WorkStation>& workStationVec) {
 	Position stPostion = ws.position;
@@ -239,6 +305,23 @@ void getCloestSellStation(WorkStation& ws, vector<int>& sellWordStation8, vector
 	ws.sellWorkStationID = closestSellWorkStationID;
 }
 
+// 找到某第1or2层节点和一个9节点的最近距离
+void getCloestSellStation(WorkStation& ws, vector<int>& sellWordStation9, vector<WorkStation>& workStationVec) {
+	float curDis = 0;
+	float minDisWithSellStation = FLT_MAX;
+	int closestSellWorkStationID = -1;
+	for (int i = 0; i < sellWordStation9.size(); i++) {
+		// 找当前节点和所有9之间的最小值
+		curDis = calDis(ws.position, workStationVec[sellWordStation9[i]].position);
+		if (curDis < minDisWithSellStation) {
+			minDisWithSellStation = curDis;
+			closestSellWorkStationID = workStationVec[sellWordStation9[i]].id;
+		}
+	}
+	// 将这个找到的最近的出售点设置为当前l2节点的出售节点
+	ws.sellWorkStationID = closestSellWorkStationID;
+	ws.sellCost = minDisWithSellStation;
+}
 
 /****读取每一帧的内容*****/
 bool getFrameInput(int& frameId, int& price) {
@@ -266,6 +349,120 @@ bool getFrameInput(int& frameId, int& price) {
 	if (okStr.compare("OK")) {
 		// 如果最后输出的是ok，则认为正确
 		return true;
+	}
+	return false;
+}
+
+
+// 获取所有第二层节点到出售它们的节点的距离——初始化时，只做一次
+void getSecondLevelStationSellStation(vector<WorkStation>& workStationVec, vector<vector<int>>& stations, vector<int>& sellWordStation9) {
+	for (int i = 4; i <= 6; i++) {
+		for (int j = 0; j < stations[i - 1].size(); j++) {
+			getCloestSellStation(workStationVec[stations[i - 1][j]], sellWordStation9, workStationVec);
+		}
+	}
+}
+
+// 获取所有第一层节点到出售它们的节点的距离——初始化时，只做一次
+void getFirstLevelStationSellStation(vector<WorkStation>& workStationVec, vector<vector<int>>& stations, vector<int>& sellWordStation8) {
+	for (int i = 1; i <= 3; i++) {
+		for (int j = 0; j < stations[i - 1].size(); i++) {
+			getCloestSellStation(workStationVec[stations[i][j]], sellWordStation8, workStationVec);
+		}
+	}
+}
+
+
+//重写排序方法
+bool comp(const WorkStation& a, const WorkStation& b) {
+	//常引用const T &xxx
+	return  (a.cost + a.sellCost) < (b.cost + b.sellCost);
+	// <代表升序，>代表降序
+}
+
+
+// 如果在没有7的情况下，则调用以下方式来获取第二层的任务，对于第二层的任务，我们选择最好实现的前3个作为需要调度的内容
+bool calTasksWithOutStation7(vector<vector<int>>& stations, vector<int>& busyStation, vector<WorkStation>& workStationVec, vector<int>& secondLevelTask) {
+	// 默认存在第二层的任务
+
+	// 从当前可能的第二层任务中进行查找，从4、5、6中找
+	// 用一个List存排名前三的Station，然后按照cost进行排序后作为输出结果,tuple的组成（id，cost），后面按照cost做一次排序
+	vector<WorkStation> secondLevelTaskStations;
+	for (int i = 4; i <= 6; i++) {
+		// 分别对4、5、6每一类进行处理
+		for (int j = 0; j < stations[i - 1].size(); j++) {
+			// 从里面开始找
+			if (!busyStation.empty() && count(busyStation.begin(), busyStation.end(), workStationVec[stations[i - 1][j]].id)) {
+				// 如果有任务正在忙，则不考虑它
+				continue;
+			}
+			// 进行加工处理
+			secondLevelTaskStations.push_back(workStationVec[stations[i - 1][j]]);
+		}
+	}
+	// 对最终结果进行排序输出
+	sort(secondLevelTaskStations.begin(), secondLevelTaskStations.end(), comp);
+	// 选取前三名作为输出的任务
+
+	for (int i = 0; i < 3; i++)
+	{
+		secondLevelTask.push_back(secondLevelTaskStations[i].id);
+	}
+
+	return true;
+}
+
+/*
+// 好像没有用到
+// 在初始化的时候进行判断，到底要计算哪一些的sellcost
+void findWhichLevelStationExist(vector<vector<int>>& stations) {
+	// 首先看是否有7，如果有的话则全局的目标就是构造7
+	if (existFixedLevelStation(stations, 3)) {
+		// 对7计算它的出售位置
+	}
+	// 如果没有7但是有第2层节点，则全局的目标是构造第二层数据
+	else if(existFixedLevelStation(stations, 2))
+	{
+		// 对4、5、6计算它的出售位置
+		getSecondLevelStationSellStation(workStation)
+
+	}
+	else {
+		// 没有第2层节点，全局的目标是第一层数据
+		getFirstLevelStationSellStation(workStation);
+	}
+
+
+}
+
+*/
+
+
+bool existFixedLevelStation(vector<vector<int>>& stations, int level) {
+	int start, end;
+	switch (level)
+	{
+	case 1:
+		start = 1;
+		end = 3;
+		break;
+	case 2:
+		start = 4;
+		end = 6;
+		break;
+	case 3:
+		start = 7;
+		end = 7;
+		break;
+	default:
+		return false;
+		break;
+	}
+	// 找它的几层里是否有需要的数据
+	for (int i = start; i <= end; i++) {
+		if (stations[i - 1].size() > 0) {
+			return true;
+		}
 	}
 	return false;
 }

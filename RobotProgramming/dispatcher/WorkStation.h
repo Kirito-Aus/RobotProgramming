@@ -42,6 +42,7 @@ public:
 	vector<int> preWorkStationID;
 	// 完成生产该任务的开销（上一层工作台的总开销+上一层工作台到该工作台的总开销）
 	double cost;
+	double sellCost;
 	int sellWorkStationID;
 
 	WorkStation():id(0), type(0), priority(1000) {}
